@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
+	"strings"
 
 	"github.com/felixge/fgprof"
 	"github.com/goccy/go-json"
@@ -15,7 +16,7 @@ import (
 
 var (
 	httplogPath       = getEnvOrDefault("PPROTEIN_HTTPLOG", "/var/log/nginx/access.log")
-	slowlogPath       = getEnvOrDefault("PPROTEIN_SLOWLOG", "/var/log/mysql/mysql-slow.log")
+	slowlogPath       = getEnvOrDefault("PPROTEIN_SLOWLOG", defaultSlowlogPath())
 	gitRepositoryPath = getEnvOrDefault("PPROTEIN_GIT_REPOSITORY", ".")
 )
 
@@ -66,4 +67,13 @@ func getEnvOrDefault(key string, def string) string {
 		return def
 	}
 	return v
+}
+
+func defaultSlowlogPath() string {
+	switch strings.ToLower(os.Getenv("PPROTEIN_DB_TYPE")) {
+	case "postgres", "postgresql", "pg":
+		return "/var/log/postgresql/postgresql.log"
+	default:
+		return "/var/log/mysql/mysql-slow.log"
+	}
 }
